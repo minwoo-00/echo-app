@@ -11,6 +11,7 @@ public class User {
     private String email;
     private String nickname;
     private String profileMassage;
+    private String profileImageUrl;
     private int followerCnt;
     private int followingCnt;
     private int rateCnt;

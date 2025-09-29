@@ -7,6 +7,7 @@ import com.echo.echo_backend.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -60,6 +61,13 @@ public class UserController {
     @GetMapping("/{userId}/followings")
     public ResponseEntity<List<UserSummaryResponse>> getFollowings(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.getFollowings(userId));
+    }
+
+    @PostMapping("/{userId}/profile-image")
+    public ResponseEntity<UserResponse> uploadProfileImage(
+            @PathVariable Long userId,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(userService.updateProfileImage(userId, file));
     }
 
 }

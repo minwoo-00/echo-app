@@ -28,6 +28,13 @@ public class UserMemoryRepository implements UserRepository{
     }
 
     @Override
+    public User updateProfileImageUrl(Long id, String profileImageUrl) {
+        User user = findById(id);
+        user.setProfileImageUrl(profileImageUrl);
+        return user;
+    }
+
+    @Override
     public User findBySpotifyId(String spotify_id) {
         return storeUsers.get(spotify_id);
     }

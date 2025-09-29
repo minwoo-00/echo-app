@@ -11,17 +11,17 @@ public class UserResponse {
     private int followerCnt;
     private int followingCnt;
     private int rateCnt;
-    private double avgRate;
     private boolean followState;
+    private String profileImageUrl;
 
-    public UserResponse(Long id, String nickname, String profileMassage, int followerCnt, int followingCnt, int rateCnt, double avgRate) {
+    public UserResponse(Long id, String nickname, String profileMassage, String profileImageUrl, int followerCnt, int followingCnt, int rateCnt) {
         this.id = id;
         this.nickname = nickname;
         this.profileMassage = profileMassage;
+        this.profileImageUrl = profileImageUrl;
         this.followerCnt = followerCnt;
         this.followingCnt = followingCnt;
         this.rateCnt = rateCnt;
-        this.avgRate = avgRate;
     }
 
 }

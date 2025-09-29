@@ -37,7 +37,8 @@ public class SecurityConfig {
                                 "/auth/spotify/url",
                                 "/oauth2/callback/spotify",
                                 "/actuator/health",
-                                "/users/*"
+                                "/users/*",
+                                "/uploads/*"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
