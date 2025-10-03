@@ -3,9 +3,7 @@ package com.echo.echo_backend.user.repository;
 import com.echo.echo_backend.user.entity.User;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Repository
 public class UserMemoryRepository implements UserRepository{
@@ -49,5 +47,10 @@ public class UserMemoryRepository implements UserRepository{
             }
         }
         return null;
+    }
+
+    @Override
+    public List<User> findAll() {
+        return new ArrayList<>(storeUsers.values());
     }
 }

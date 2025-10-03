@@ -10,6 +10,7 @@ import com.echo.echo_backend.user.repository.UserRepository;
 import com.echo.echo_backend.user.repository.UserTokensRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -64,6 +65,19 @@ public class UserService {
     public UserResponse completeSignup(Long id, String nickname) {
         User user = userRepository.updateNickname(id, nickname);
         return toResponse(user);
+    }
+
+    public boolean isNicknamePossible(String nickname) {
+        List<User> userList = userRepository.findAll();
+        for (User user : userList) {
+            if (user.getNickname().equals(nickname)) {
+                return false;
+            }
+        }
+        if (nickname.isEmpty()) {
+            return false;
+        }
+        return true;
     }
 
     public void updateTokens(String spotifyId, String accessToken, String refreshToken, int expiresIn) {
@@ -137,6 +151,13 @@ public class UserService {
         } catch (IOException e) {
             throw new RuntimeException("File upload failed", e);
         }
+    }
+
+    @Transactional
+    public UserResponse updateProfileMessage(Long userId, String profileMessage) {
+        User user = userRepository.findById(userId);
+        user.setProfileMassage(profileMessage);
+        return toResponse(user);
     }
 
 

@@ -42,12 +42,12 @@ public class SpotifyCallbackController {
             @RequestParam String state
     ) throws Exception {
         // 1. state 검증
-        System.out.println("state 검증 시작");
+        log.info("state 검증 시작");
         String codeVerifier = stateStore.consume(state);
         if (codeVerifier == null) {
             throw new IllegalStateException("Invalid state parameter");
         }
-        System.out.println("callback call!!!");
+        log.info("state 검증 성공!");
 
         // 2. 토큰 교환 요청
         String body = "grant_type=authorization_code" +
@@ -112,8 +112,6 @@ public class SpotifyCallbackController {
         String jwt = jwtProvider.generateToken(user.getId().toString());
 
         // 6. 반환 (프론트로 JWT 전달)
-        System.out.println("spotify_access_token = " + tokenResponse.getAccessToken());
-        System.out.println("spotify_refresh_token = " + tokenResponse.getRefreshToken());
         return Map.of(
                 "echo_jwt", jwt,
                 "isNewUser", isNewUser

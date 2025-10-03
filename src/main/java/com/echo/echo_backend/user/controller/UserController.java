@@ -1,6 +1,7 @@
 package com.echo.echo_backend.user.controller;
 
 import com.echo.echo_backend.user.dto.SignupRequest;
+import com.echo.echo_backend.user.dto.UpdateProfileMessageRequest;
 import com.echo.echo_backend.user.dto.UserResponse;
 import com.echo.echo_backend.user.dto.UserSummaryResponse;
 import com.echo.echo_backend.user.service.UserService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -27,6 +29,14 @@ public class UserController {
         // JWT에서 userId 추출 (JwtAuthenticationFilter에서 sub를 principal로 넣어둠)
         Long userId = (Long) authentication.getPrincipal();
         return userService.completeSignup(userId, request.getNickname());
+    }
+
+    @Operation(summary = "Check nickname validation", description = "If nickname already exists or empty, returns false")
+    @PostMapping("/check")
+    public Map<String, String> checkNickname(@RequestBody SignupRequest request, Authentication authentication) {
+        String nickname = request.getNickname();
+        boolean nicknamePossible = userService.isNicknamePossible(nickname);
+        return Map.of("possible", String.valueOf(nicknamePossible));
     }
 
     @Operation(summary = "Get current user profile", description = "Returns the profile of the currently authenticated user.")
@@ -84,6 +94,14 @@ public class UserController {
             @Parameter(description = "The profile image file to upload")
             @RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(userService.updateProfileImage(userId, file));
+    }
+
+    @Operation(summary = "Update my profile message",
+            description = "Update the profile message of the currently authenticated user.")
+    @PatchMapping("/me/profile-message")
+    public ResponseEntity<UserResponse> updateProfileMessage(@RequestBody UpdateProfileMessageRequest request, Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(userService.updateProfileMessage(userId, request.getProfileMessage()));
     }
 
 }
