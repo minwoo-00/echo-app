@@ -71,6 +71,10 @@ public class UserService {
     }
 
     public void follow(Long id, Long followingId) {
+        if (id.equals(followingId)) {
+            return;
+        }
+
         followRepository.save(id, followingId);
         userRepository.findById(id).incrementFollowing();
         userRepository.findById(followingId).incrementFollower();
