@@ -56,8 +56,8 @@ public class UserService {
     }
 
     public User createUser(String spotifyId, String email,String accessToken, String refreshToken, int expiresIn) {
-        User user = userRepository.saveUser(new User(spotifyId, email));
-        userTokensRepository.saveTokens(new UserTokens(spotifyId, accessToken, refreshToken, expiresIn));
+        User user = userRepository.saveUser(spotifyId, email);
+        userTokensRepository.saveTokens(spotifyId, accessToken, refreshToken, expiresIn);
         return user;
     }
 

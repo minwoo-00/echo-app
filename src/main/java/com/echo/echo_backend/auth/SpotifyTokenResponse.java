@@ -20,5 +20,4 @@ public class SpotifyTokenResponse {
 
     private String scope;
 
-    // getters & setters
 }

@@ -14,7 +14,8 @@ public class UserMemoryRepository implements UserRepository{
     private static long sequence = 0L;
 
     @Override
-    public User saveUser(User user) {
+    public User saveUser(String spotify_id, String email) {
+        User user = new User(spotify_id, email);
         user.setId(++sequence);
         storeUsers.put(user.getSpotify_id(), user);
         return user;

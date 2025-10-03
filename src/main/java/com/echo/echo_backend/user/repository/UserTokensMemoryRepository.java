@@ -3,6 +3,7 @@ package com.echo.echo_backend.user.repository;
 import com.echo.echo_backend.user.entity.UserTokens;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,7 +18,8 @@ public class UserTokensMemoryRepository implements UserTokensRepository{
     }
 
     @Override
-    public UserTokens saveTokens(UserTokens userTokens) {
+    public UserTokens saveTokens(String spotify_id, String accessToken, String refreshToken, int expiresIn) {
+        UserTokens userTokens = new UserTokens(spotify_id, accessToken, refreshToken, expiresIn);
         storeTokens.put(userTokens.getSpotify_id(), userTokens);
         return userTokens;
     }
@@ -27,7 +29,7 @@ public class UserTokensMemoryRepository implements UserTokensRepository{
         UserTokens userTokens = storeTokens.get(spotify_id);
         userTokens.setSpotify_access_token(accessToken);
         userTokens.setSpotify_refresh_token(refreshToken);
-        userTokens.setExpiresIn(expiresIn);
+        userTokens.setExpiresAt(Instant.now().plusSeconds(expiresIn));
         return userTokens;
     }
 }
