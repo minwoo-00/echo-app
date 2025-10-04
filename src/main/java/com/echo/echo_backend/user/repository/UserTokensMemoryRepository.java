@@ -18,8 +18,7 @@ public class UserTokensMemoryRepository implements UserTokensRepository{
     }
 
     @Override
-    public UserTokens saveTokens(String spotify_id, String accessToken, String refreshToken, int expiresIn) {
-        UserTokens userTokens = new UserTokens(spotify_id, accessToken, refreshToken, expiresIn);
+    public UserTokens saveTokens(UserTokens userTokens) {
         storeTokens.put(userTokens.getSpotify_id(), userTokens);
         return userTokens;
     }
