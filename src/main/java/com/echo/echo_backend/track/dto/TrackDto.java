@@ -9,11 +9,11 @@ import java.util.List;
 public class TrackDto {
     private String name;
     private String spotifyId;
-    private String artist;
+    private List<String> artist;
     private String spotifyUri;
     private List<ImageDto> images;
 
-    public TrackDto(String name, String spotifyId, String artist, String spotifyUri, List<ImageDto> images) {
+    public TrackDto(String name, String spotifyId, List<String> artist, String spotifyUri, List<ImageDto> images) {
         this.name = name;
         this.spotifyId = spotifyId;
         this.artist = artist;

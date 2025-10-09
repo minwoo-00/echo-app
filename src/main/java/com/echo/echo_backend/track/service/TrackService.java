@@ -3,6 +3,7 @@ package com.echo.echo_backend.track.service;
 import com.echo.echo_backend.auth.service.SpotifyAuthService;
 import com.echo.echo_backend.track.dto.ImageDto;
 import com.echo.echo_backend.track.dto.SpotifySearchResponse;
+import com.echo.echo_backend.track.dto.SpotifyTopTracksResponse;
 import com.echo.echo_backend.track.dto.TrackDto;
 import com.echo.echo_backend.user.entity.User;
 import com.echo.echo_backend.user.repository.UserRepository;
@@ -48,7 +49,7 @@ public class TrackService {
         List<SpotifySearchResponse.TrackItem> items = response.getBody().getTracks().getItems();
 
         return items.stream().map(item -> {
-            String artistName = item.getArtists().isEmpty() ? "" : item.getArtists().get(0).getName();
+            List<String> artistName = item.getArtists().stream().map(SpotifySearchResponse.Artist::getName).toList();
 
             List<ImageDto> images = (item.getAlbum() != null) ? (item.getAlbum().getImages().stream()
                     .map(img -> new ImageDto(img.getUrl(), img.getHeight(), img.getWidth()))
@@ -63,6 +64,40 @@ public class TrackService {
                     images
             );
         }).toList();
+    }
+
+
+    public List<TrackDto> getUserTopTracks(Long userId) {
+        User user = userRepository.findById(userId);
+        String accessToken = spotifyAuthService.getValidAccessToken(user.getSpotify_id());
+
+        String url = BASE_URL + "/me/top/tracks" + "?limit=20";
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<SpotifyTopTracksResponse> response =
+                restTemplate.exchange(url, HttpMethod.GET, entity, SpotifyTopTracksResponse.class);
+
+        List<SpotifyTopTracksResponse.TrackItem> items = response.getBody().getItems();
+
+        return items.stream().map(item -> {
+            List<String> artistName = item.getArtists().stream().map(SpotifyTopTracksResponse.Artist::getName).toList();
+
+            List<ImageDto> images = (item.getAlbum() != null) ? (item.getAlbum().getImages().stream()
+                    .map(img -> new ImageDto(img.getUrl(), img.getHeight(), img.getWidth()))
+                    .toList())
+                    : List.of();
+
+            return new TrackDto(
+                    item.getName(),
+                    item.getId(),
+                    artistName,
+                    item.getUri(),
+                    images
+            );
+        }).toList();
+
     }
 
 }

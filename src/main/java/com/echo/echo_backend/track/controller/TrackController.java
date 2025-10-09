@@ -29,4 +29,11 @@ public class TrackController {
         Long userId = (Long) authentication.getPrincipal();
         return ResponseEntity.ok(trackService.searchTracks(userId, query));
     }
+
+    @Operation(summary = "Onboarding", description = "Get the current user's top tracks based on calculated affinity.")
+    @GetMapping("/onboarding")
+    public ResponseEntity<List<TrackDto>> onboarding(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(trackService.getUserTopTracks(userId));
+    }
 }
