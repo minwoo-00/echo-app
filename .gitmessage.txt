@@ -1,0 +1,8 @@
+# <type>(<scope>): <subject>
+
+# [optional body: what and why]
+
+# example:
+# feat(track): add review posting API
+# - Added endpoint POST /track/review
+# - Saves track to DB if not exists
