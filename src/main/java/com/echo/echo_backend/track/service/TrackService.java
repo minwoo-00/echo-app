@@ -1,17 +1,21 @@
 package com.echo.echo_backend.track.service;
 
 import com.echo.echo_backend.auth.service.SpotifyAuthService;
-import com.echo.echo_backend.track.dto.ImageDto;
-import com.echo.echo_backend.track.dto.SpotifySearchResponse;
-import com.echo.echo_backend.track.dto.SpotifyTopTracksResponse;
-import com.echo.echo_backend.track.dto.TrackDto;
+import com.echo.echo_backend.track.dto.*;
+import com.echo.echo_backend.track.entity.Rating;
+import com.echo.echo_backend.track.entity.Track;
+import com.echo.echo_backend.track.repository.CommentRepository;
+import com.echo.echo_backend.track.repository.RatingRepository;
+import com.echo.echo_backend.track.repository.TrackRepository;
 import com.echo.echo_backend.user.entity.User;
 import com.echo.echo_backend.user.repository.UserRepository;
+import lombok.Builder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
 import java.nio.charset.StandardCharsets;
@@ -24,10 +28,16 @@ public class TrackService {
     private static final String BASE_URL = "https://api.spotify.com/v1";
     private final UserRepository userRepository;
     private final SpotifyAuthService spotifyAuthService;
+    private final TrackRepository trackRepository;
+    private final RatingRepository ratingRepository;
+    private final CommentRepository commentRepository;
 
-    public TrackService(UserRepository userRepository, SpotifyAuthService spotifyAuthService) {
+    public TrackService(UserRepository userRepository, SpotifyAuthService spotifyAuthService, TrackRepository trackRepository, RatingRepository ratingRepository, CommentRepository commentRepository) {
         this.userRepository = userRepository;
         this.spotifyAuthService = spotifyAuthService;
+        this.trackRepository = trackRepository;
+        this.ratingRepository = ratingRepository;
+        this.commentRepository = commentRepository;
     }
 
     public List<TrackDto> searchTracks(Long userId, String query) {
@@ -37,7 +47,7 @@ public class TrackService {
         //String url = BASE_URL + "/search?q=" + UriUtils.encode(query, StandardCharsets.UTF_8)
         //        + "&type=track&limit=20";
         String url = BASE_URL + "/search?q=" + query
-                  + "&type=track&limit=20";
+                  + "&type=track&market=KR&limit=20";
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
 
@@ -97,6 +107,60 @@ public class TrackService {
                     images
             );
         }).toList();
+    }
+
+    public ReviewDto getTrackReview(String trackId, Long userId) { // rating + comment 반환
+
+        List<Rating> ratings = ratingRepository.findByTrackId(trackId);
+        int rateCnt = ratings.size();
+        Double avgRate = ratings.stream().mapToDouble(Rating::getRate).average().orElse(0.0);
+        Double myRate = ratings.stream()
+                .filter(r -> r.getUserId().equals(userId))
+                .map(Rating::getRate)
+                .findFirst()
+                .orElse(0.0);
+
+        List<CommentDto> comments = commentRepository.findByTrackId(trackId)
+                .stream()
+                .map(CommentDto::fromEntity)
+                .toList();
+
+        return ReviewDto.builder()
+                .spotifyId(trackId)
+                .avgRate(avgRate)
+                .rateCnt(rateCnt)
+                .myRate(myRate)
+                .comments(comments)
+                .build();
+    }
+
+    public TrackInfoDto getTrackInfo(TrackDto trackDto, Long userId) {  //trackDto + rating + comment 반환
+
+        List<Rating> ratings = ratingRepository.findByTrackId(trackDto.getSpotifyId());
+        int rateCnt = ratings.size();
+        Double avgRate = ratings.stream().mapToDouble(Rating::getRate).average().orElse(0.0);
+        Double myRate = ratings.stream()
+                .filter(r -> r.getUserId().equals(userId))
+                .map(Rating::getRate)
+                .findFirst()
+                .orElse(0.0);
+
+        List<CommentDto> comments = commentRepository.findByTrackId(trackDto.getSpotifyId())
+                .stream()
+                .map(CommentDto::fromEntity)
+                .toList();
+
+        return TrackInfoDto.builder()
+                .name(trackDto.getName())
+                .spotifyId(trackDto.getSpotifyId())
+                .artist(trackDto.getArtist())
+                .spotifyUri(trackDto.getSpotifyUri())
+                .images(trackDto.getImages())
+                .avgRate(avgRate)
+                .rateCnt(rateCnt)
+                .myRate(myRate)
+                .comments(comments)
+                .build();
 
     }
 

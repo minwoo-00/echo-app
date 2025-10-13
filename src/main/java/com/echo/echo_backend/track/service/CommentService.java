@@ -1,0 +1,96 @@
+package com.echo.echo_backend.track.service;
+
+import com.echo.echo_backend.track.dto.CommentDto;
+import com.echo.echo_backend.track.dto.CommentRequest;
+import com.echo.echo_backend.track.dto.TrackInfoDto;
+import com.echo.echo_backend.track.entity.Comment;
+import com.echo.echo_backend.track.entity.Rating;
+import com.echo.echo_backend.track.entity.Track;
+import com.echo.echo_backend.track.repository.CommentRepository;
+import com.echo.echo_backend.track.repository.RatingRepository;
+import com.echo.echo_backend.track.repository.TrackRepository;
+import com.echo.echo_backend.user.entity.User;
+import com.echo.echo_backend.user.repository.UserRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+public class CommentService {
+
+    private final UserRepository userRepository;
+    private final TrackRepository trackRepository;
+    private final RatingRepository ratingRepository;
+    private final CommentRepository commentRepository;
+
+    public CommentService(UserRepository userRepository, TrackRepository trackRepository, RatingRepository ratingRepository, CommentRepository commentRepository) {
+        this.userRepository = userRepository;
+        this.trackRepository = trackRepository;
+        this.ratingRepository = ratingRepository;
+        this.commentRepository = commentRepository;
+    }
+
+    @Transactional
+    public TrackInfoDto createOrUpdateComment(CommentRequest request, Long userId) {
+        User user = userRepository.findById(userId);
+
+        //트랙이 db에 없으면 새로 생성
+        List<Track.Image> images = Track.toImage(request.getImages());
+        Track track = trackRepository.findById(request.getSpotifyId())
+                .orElseGet(() -> {
+                    Track newTrack = Track.builder()
+                            .track_id(request.getSpotifyId())
+                            .title(request.getName())
+                            .artist(request.getArtist())
+                            .spotifyUri(request.getSpotifyUri())
+                            .images(images)
+                            .build();
+                    return trackRepository.save(newTrack);
+                });
+
+        //기존 코멘트 있으면 수정, 없으면 새로 등록
+        Comment comment = commentRepository.findByUserAndTrack(userId, track.getTrack_id())
+                .map(existing -> {
+                    existing.setContent(request.getContent());
+                    return existing;
+                })
+                .orElseGet(() -> commentRepository.save(
+                        Comment.builder()
+                                .userId(userId)
+                                .userNickname(user.getNickname())
+                                .trackId(track.getTrack_id())
+                                .content(request.getContent())
+                                .createdAt(LocalDateTime.now())
+                                .build()
+                ));
+
+        //트랙의 평점 계산
+        List<Rating> ratings = ratingRepository.findByTrackId(track.getTrack_id());
+        int rateCnt = ratings.size();
+        Double avgRate = ratings.stream().mapToDouble(Rating::getRate).average().orElse(0.0);
+        Double myRate = ratings.stream()
+                .filter(r -> r.getUserId().equals(userId))
+                .map(Rating::getRate)
+                .findFirst()
+                .orElse(0.0);
+
+        List<CommentDto> comments = commentRepository.findByTrackId(track.getTrack_id())
+                .stream()
+                .map(CommentDto::fromEntity)
+                .toList();
+
+        return TrackInfoDto.builder()
+                .name(track.getTitle())
+                .spotifyId(track.getTrack_id())
+                .artist(track.getArtist())
+                .spotifyUri(track.getSpotifyUri())
+                .images(request.getImages())
+                .avgRate(avgRate)
+                .rateCnt(rateCnt)
+                .myRate(myRate)
+                .comments(comments)
+                .build();
+    }
+}

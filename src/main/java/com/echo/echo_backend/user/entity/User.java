@@ -41,4 +41,15 @@ public class User {
             this.followerCnt--;
         }
     }
+
+    public void incrementRateCnt() {
+        this.rateCnt++;
+    }
+
+    public void decrementRateCnt() {
+        if (rateCnt > 0) {
+            this.rateCnt--;
+        }
+    }
+
 }
