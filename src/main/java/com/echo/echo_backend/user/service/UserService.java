@@ -49,12 +49,13 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponse getUserProfile(Long myId, Long userId) {
         UserResponse response = toResponse(userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found")));
-        List<Follow> followingList = followRepository.findByFollowerId(myId);
+        /*List<Follow> followingList = followRepository.findByFollowerId(myId);
         for (Follow follow : followingList) {
             if (follow.getFollowingId().equals(userId)) {
                 response.setFollowState(true);
             }
-        }
+        }*/
+        response.setFollowState(followRepository.existsByUserIdAndFollowingId(myId, userId));
         return response;
     }
 
@@ -97,14 +98,14 @@ public class UserService {
             return;
         }
 
-        followRepository.save(id, followingId);
+        followRepository.save(new Follow(id, followingId));
         userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found")).incrementFollowing();
         userRepository.findById(followingId).orElseThrow(() -> new IllegalArgumentException("User not found")).incrementFollower();
     }
 
     @Transactional
     public void unfollow(Long id, Long followingId) {
-        followRepository.delete(id, followingId);
+        followRepository.deleteByUserIdAndFollowingId(id, followingId);
         userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found")).decrementFollowing();
         userRepository.findById(followingId).orElseThrow(() -> new IllegalArgumentException("User not found")).decrementFollower();
     }
@@ -122,7 +123,8 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserSummaryResponse> getFollowings(Long userId) {
-        List<Follow> follows = followRepository.findByFollowerId(userId);
+        //List<Follow> follows = followRepository.findByFollowerId(userId);
+        List<Follow> follows = followRepository.findByUserId(userId);
         List<UserSummaryResponse> followList = new ArrayList<>();
         for (Follow follow : follows) {
             User user = userRepository.findById(follow.getFollowingId()).orElseThrow(() -> new IllegalArgumentException("User not found"));

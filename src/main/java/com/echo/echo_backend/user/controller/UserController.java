@@ -64,7 +64,7 @@ public class UserController {
     }
 
     @Operation(summary = "Unfollow a user", description = "Unfollow a specific user by their ID.")
-    @DeleteMapping("/{userId}/follow")
+    @DeleteMapping("/{userId}/unfollow")
     public ResponseEntity<Void> unfollow(
             @Parameter(description = "The ID of the user to unfollow") @PathVariable Long userId, Authentication authentication) {
         Long myId = (Long) authentication.getPrincipal();
