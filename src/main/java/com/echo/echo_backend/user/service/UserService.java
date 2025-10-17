@@ -19,7 +19,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -37,16 +36,19 @@ public class UserService {
         this.followRepository = followRepository;
     }
 
+    @Transactional(readOnly = true)
     public User findBySpotifyId(String spotify_id) {
-        return userRepository.findBySpotifyId(spotify_id);
+        return userRepository.findBySpotifyId(spotify_id).orElse(null);
     }
 
+    @Transactional(readOnly = true)
     public UserResponse getUserProfile(Long userId) {
-        return toResponse(userRepository.findById(userId));
+        return toResponse(userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found")));
     }
 
+    @Transactional(readOnly = true)
     public UserResponse getUserProfile(Long myId, Long userId) {
-        UserResponse response = toResponse(userRepository.findById(userId));
+        UserResponse response = toResponse(userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found")));
         List<Follow> followingList = followRepository.findByFollowerId(myId);
         for (Follow follow : followingList) {
             if (follow.getFollowingId().equals(userId)) {
@@ -56,17 +58,21 @@ public class UserService {
         return response;
     }
 
+    @Transactional
     public User createUser(String spotifyId, String email,String accessToken, String refreshToken, int expiresIn) {
-        User user = userRepository.saveUser(new User(spotifyId, email)); // String spotify_id, String email
+        User user = userRepository.save(new User(spotifyId, email)); // String spotify_id, String email
         userTokensRepository.saveTokens(new UserTokens(spotifyId, accessToken, refreshToken, expiresIn));
         return user;
     }
 
+    @Transactional
     public UserResponse completeSignup(Long id, String nickname) {
-        User user = userRepository.updateNickname(id, nickname);
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        user.setNickname(nickname);
         return toResponse(user);
     }
 
+    @Transactional(readOnly = true)
     public boolean isNicknamePossible(String nickname) {
         List<User> userList = userRepository.findAll();
         for (User user : userList) {
@@ -80,46 +86,52 @@ public class UserService {
         return true;
     }
 
+    @Transactional
     public void updateTokens(String spotifyId, String accessToken, String refreshToken, int expiresIn) {
         userTokensRepository.updateTokens(spotifyId,accessToken,refreshToken,expiresIn);
     }
 
+    @Transactional
     public void follow(Long id, Long followingId) {
         if (id.equals(followingId)) {
             return;
         }
 
         followRepository.save(id, followingId);
-        userRepository.findById(id).incrementFollowing();
-        userRepository.findById(followingId).incrementFollower();
+        userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found")).incrementFollowing();
+        userRepository.findById(followingId).orElseThrow(() -> new IllegalArgumentException("User not found")).incrementFollower();
     }
 
+    @Transactional
     public void unfollow(Long id, Long followingId) {
         followRepository.delete(id, followingId);
-        userRepository.findById(id).decrementFollowing();
-        userRepository.findById(followingId).decrementFollower();
+        userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found")).decrementFollowing();
+        userRepository.findById(followingId).orElseThrow(() -> new IllegalArgumentException("User not found")).decrementFollower();
     }
 
+    @Transactional(readOnly = true)
     public List<UserSummaryResponse> getFollowers(Long userId) {
         List<Follow> follows = followRepository.findByFollowingId(userId);
         List<UserSummaryResponse> followList = new ArrayList<>();
         for (Follow follow : follows) {
-            User user = userRepository.findById(follow.getUserId());
+            User user = userRepository.findById(follow.getUserId()).orElseThrow(() -> new IllegalArgumentException("User not found"));
             followList.add(new UserSummaryResponse(user.getId(), user.getNickname()));
         }
         return followList;
     }
 
+    @Transactional(readOnly = true)
     public List<UserSummaryResponse> getFollowings(Long userId) {
         List<Follow> follows = followRepository.findByFollowerId(userId);
         List<UserSummaryResponse> followList = new ArrayList<>();
         for (Follow follow : follows) {
-            User user = userRepository.findById(follow.getFollowingId());
+            User user = userRepository.findById(follow.getFollowingId()).orElseThrow(() -> new IllegalArgumentException("User not found"));
             followList.add(new UserSummaryResponse(user.getId(), user.getNickname()));
         }
         return followList;
     }
 
+    @Transactional
     public UserResponse updateProfileImage(Long userId, MultipartFile file) {
 
         try {
@@ -144,7 +156,8 @@ public class UserService {
                 urlPath = "/uploads/" + fileName;
             }
 
-            User user = userRepository.updateProfileImageUrl(userId, urlPath);
+            User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+            user.setProfileImageUrl(urlPath);
 
             return toResponse(user);
 
@@ -155,8 +168,8 @@ public class UserService {
 
     @Transactional
     public UserResponse updateProfileMessage(Long userId, String profileMessage) {
-        User user = userRepository.findById(userId);
-        user.setProfileMassage(profileMessage);
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        user.setProfileMessage(profileMessage);
         return toResponse(user);
     }
 
@@ -166,7 +179,7 @@ public class UserService {
         return new UserResponse(
                 user.getId(),
                 user.getNickname(),
-                user.getProfileMassage(),
+                user.getProfileMessage(),
                 user.getProfileImageUrl(),
                 user.getFollowerCnt(),
                 user.getFollowingCnt(),

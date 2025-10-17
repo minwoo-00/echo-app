@@ -3,22 +3,18 @@ package com.echo.echo_backend.track.service;
 import com.echo.echo_backend.auth.service.SpotifyAuthService;
 import com.echo.echo_backend.track.dto.*;
 import com.echo.echo_backend.track.entity.Rating;
-import com.echo.echo_backend.track.entity.Track;
 import com.echo.echo_backend.track.repository.CommentRepository;
 import com.echo.echo_backend.track.repository.RatingRepository;
 import com.echo.echo_backend.track.repository.TrackRepository;
 import com.echo.echo_backend.user.entity.User;
 import com.echo.echo_backend.user.repository.UserRepository;
-import lombok.Builder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriUtils;
-import java.nio.charset.StandardCharsets;
+
 import java.util.List;
 
 @Service
@@ -41,8 +37,8 @@ public class TrackService {
     }
 
     public List<TrackDto> searchTracks(Long userId, String query) {
-        User user = userRepository.findById(userId);
-        String accessToken = spotifyAuthService.getValidAccessToken(user.getSpotify_id());
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        String accessToken = spotifyAuthService.getValidAccessToken(user.getSpotifyId());
 
         //String url = BASE_URL + "/search?q=" + UriUtils.encode(query, StandardCharsets.UTF_8)
         //        + "&type=track&limit=20";
@@ -78,8 +74,8 @@ public class TrackService {
 
 
     public List<TrackDto> getUserTopTracks(Long userId) {
-        User user = userRepository.findById(userId);
-        String accessToken = spotifyAuthService.getValidAccessToken(user.getSpotify_id());
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        String accessToken = spotifyAuthService.getValidAccessToken(user.getSpotifyId());
 
         String url = BASE_URL + "/me/top/tracks" + "?limit=20";
         HttpHeaders headers = new HttpHeaders();

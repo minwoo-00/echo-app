@@ -1,24 +1,49 @@
 package com.echo.echo_backend.user.entity;
 
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Entity
 @Getter @Setter
+@NoArgsConstructor
+@Table(name = "users")
 public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String spotify_id;
-    private String email;
-    private String nickname;
-    private String profileMassage;
-    private String profileImageUrl;
-    private int followerCnt;
-    private int followingCnt;
-    private int rateCnt;
-    private double avgRate;
 
-    public User(String spotify_id, String email) {
-        this.spotify_id = spotify_id;
+    @Column(nullable = false, unique = true, length = 100)
+    private String spotifyId;
+
+    @Column(nullable = false, unique = true, length = 255)
+    private String email;
+
+    @Column(length = 50)
+    private String nickname;
+
+    @Column(length = 255)
+    private String profileMessage;
+
+    @Column(length = 500)
+    private String profileImageUrl;
+
+    @Column(nullable = false)
+    private int followerCnt = 0;
+
+    @Column(nullable = false)
+    private int followingCnt = 0;
+
+    @Column(nullable = false)
+    private int rateCnt = 0;
+
+    @Column(nullable = false) // 삭제 예정
+    private double avgRate = 0.0;
+
+    public User(String spotifyId, String email) {
+        this.spotifyId = spotifyId;
         this.email = email;
     }
 

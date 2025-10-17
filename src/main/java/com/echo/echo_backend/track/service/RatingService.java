@@ -32,7 +32,7 @@ public class RatingService {
 
     @Transactional
     public TrackInfoDto createOrUpdateRating(RatingRequest request, Long userId) {
-        User user = userRepository.findById(userId);
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         //트랙이 db에 없으면 새로 생성
         List<Track.Image> images = Track.toImage(request.getImages());

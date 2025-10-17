@@ -101,7 +101,7 @@ public class SpotifyCallbackController {
             isNewUser = true;
         } else {
             // 기존 유저 → 토큰 갱신
-            userService.updateTokens(user.getSpotify_id(),
+            userService.updateTokens(user.getSpotifyId(),
                     tokenResponse.getAccessToken(),
                     tokenResponse.getRefreshToken(),
                     tokenResponse.getExpiresIn());
