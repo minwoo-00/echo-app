@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 @Getter @Setter
 public class CommentDto {
+    private Long id;
     private Long userId;
     private String userNickname;
     private String trackId;
@@ -18,6 +19,7 @@ public class CommentDto {
 
     public static CommentDto fromEntity(Comment comment) {
         return CommentDto.builder()
+                .id(comment.getId())
                 .userId(comment.getUserId())
                 .userNickname(comment.getUserNickname())
                 .trackId(comment.getTrackId())

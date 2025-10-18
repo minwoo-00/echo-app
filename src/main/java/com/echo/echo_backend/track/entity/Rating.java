@@ -1,33 +1,37 @@
 package com.echo.echo_backend.track.entity;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.*;
 
 import java.util.Objects;
 
+@Entity
+@Table(name = "ratings")
 @Builder
 @Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Rating {
-    private Long userId;
-    private String trackId;
+
+    @EmbeddedId
+    private RatingId id;
+
+    @Column(nullable = false)
     private double rate;
 
     public Rating(Long userId, String trackId, double rate) {
-        this.userId = userId;
-        this.trackId = trackId;
+        this.id = new RatingId(userId, trackId);
         this.rate = rate;
     }
 
-    @Override
-    public boolean equals(Object object) {
-        if (object == null || getClass() != object.getClass()) return false;
-        Rating rating = (Rating) object;
-        return Objects.equals(userId, rating.userId) && Objects.equals(trackId, rating.trackId);
+    public Long getUserId() {
+        return id != null ? id.getUserId() : null;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(userId, trackId);
+    public String getTrackId() {
+        return id != null ? id.getTrackId() : null;
     }
 }

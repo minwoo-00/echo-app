@@ -107,7 +107,7 @@ public class TrackService {
 
     public ReviewDto getTrackReview(String trackId, Long userId) { // rating + comment 반환
 
-        List<Rating> ratings = ratingRepository.findByTrackId(trackId);
+        List<Rating> ratings = ratingRepository.findByIdTrackId(trackId);
         int rateCnt = ratings.size();
         Double avgRate = ratings.stream().mapToDouble(Rating::getRate).average().orElse(0.0);
         Double myRate = ratings.stream()
@@ -132,7 +132,7 @@ public class TrackService {
 
     public TrackInfoDto getTrackInfo(TrackDto trackDto, Long userId) {  //trackDto + rating + comment 반환
 
-        List<Rating> ratings = ratingRepository.findByTrackId(trackDto.getSpotifyId());
+        List<Rating> ratings = ratingRepository.findByIdTrackId(trackDto.getSpotifyId());
         int rateCnt = ratings.size();
         Double avgRate = ratings.stream().mapToDouble(Rating::getRate).average().orElse(0.0);
         Double myRate = ratings.stream()

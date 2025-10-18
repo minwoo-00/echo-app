@@ -49,7 +49,7 @@ public class RatingService {
                 });
 
         // 기존 평점 있으면 수정, 없으면 새로 등록
-        Rating rating = ratingRepository.findByUserAndTrack(userId, track.getTrackId())
+        Rating rating = ratingRepository.findByIdUserIdAndIdTrackId(userId, track.getTrackId())
                 .map(existing -> {
                     existing.setRate(request.getRate());
                     return existing;
@@ -57,16 +57,12 @@ public class RatingService {
                 .orElseGet(() -> {
                     user.incrementRateCnt();
                     return ratingRepository.save(
-                            Rating.builder()
-                                    .userId(userId)
-                                    .trackId(track.getTrackId())
-                                    .rate(request.getRate())
-                                    .build()
+                            new Rating(userId, track.getTrackId(), request.getRate())
                     );
                 });
 
         //트랙의 평점 계산
-        List<Rating> ratings = ratingRepository.findByTrackId(track.getTrackId());
+        List<Rating> ratings = ratingRepository.findByIdTrackId(track.getTrackId());
         int rateCnt = ratings.size();
         Double avgRate = ratings.stream().mapToDouble(Rating::getRate).average().orElse(0.0);
         Double myRate = ratings.stream()

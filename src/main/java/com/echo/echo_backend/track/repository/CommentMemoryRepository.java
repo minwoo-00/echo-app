@@ -6,17 +6,14 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
-@Repository
-public class CommentMemoryRepository implements CommentRepository{
+public class CommentMemoryRepository {
     private static final Set<Comment> store = new HashSet<>();
 
-    @Override
     public Comment save(Comment comment) {
         store.add(comment);
         return comment;
     }
 
-    @Override
     public Comment update(Comment newComment) {
         for (Comment comment : store) {
             if (comment.equals(newComment)) {
@@ -26,7 +23,6 @@ public class CommentMemoryRepository implements CommentRepository{
         return newComment;
     }
 
-    @Override
     public Comment delete(Comment delComment) {
         for (Comment comment : store) {
             if (comment.equals(delComment)) {
@@ -36,12 +32,10 @@ public class CommentMemoryRepository implements CommentRepository{
         return delComment;
     }
 
-    @Override
     public List<Comment> findByTrackId(String trackId) {
         return store.stream().filter(comment -> Objects.equals(comment.getTrackId(), trackId)).toList();
     }
 
-    @Override
     public Optional<Comment> findByUserAndTrack(Long userId, String trackId) {
         for (Comment comment : store) {
             if (comment.getUserId().equals(userId) && comment.getTrackId().equals(trackId)) {

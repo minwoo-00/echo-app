@@ -51,7 +51,7 @@ public class CommentService {
                 });
 
         //기존 코멘트 있으면 수정, 없으면 새로 등록
-        Comment comment = commentRepository.findByUserAndTrack(userId, track.getTrackId())
+        Comment comment = commentRepository.findByUserIdAndTrackId(userId, track.getTrackId())
                 .map(existing -> {
                     existing.setContent(request.getContent());
                     return existing;
@@ -62,12 +62,11 @@ public class CommentService {
                                 .userNickname(user.getNickname())
                                 .trackId(track.getTrackId())
                                 .content(request.getContent())
-                                .createdAt(LocalDateTime.now())
                                 .build()
                 ));
 
         //트랙의 평점 계산
-        List<Rating> ratings = ratingRepository.findByTrackId(track.getTrackId());
+        List<Rating> ratings = ratingRepository.findByIdTrackId(track.getTrackId());
         int rateCnt = ratings.size();
         Double avgRate = ratings.stream().mapToDouble(Rating::getRate).average().orElse(0.0);
         Double myRate = ratings.stream()
