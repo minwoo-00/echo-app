@@ -1,31 +1,60 @@
 package com.echo.echo_backend.track.entity;
 
 import com.echo.echo_backend.track.dto.ImageDto;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "tracks")
 @Builder
 @Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Track {
-    private String track_id;
+
+    @Id
+    @Column(nullable = false, unique = true)
+    private String trackId;
+
+    @Column(nullable = false)
     private String title;
-    private List<String> artist;
+
+    @Column
     private String spotifyUri;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "track_artists",
+            joinColumns = @JoinColumn(name = "track_id")
+    )
+    @Column(name = "artist_name")
+    private List<String> artists;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "track_images",
+            joinColumns = @JoinColumn(name = "track_id")
+    )
     private List<Image> images;
 
     public Track(String track_id, String title, List<String> artist, String spotifyUri, List<Image> images) {
-        this.track_id = track_id;
+        this.trackId = track_id;
         this.title = title;
-        this.artist = artist;
+        this.artists = artist;
         this.spotifyUri = spotifyUri;
         this.images = images;
     }
 
+    @Embeddable
+    @NoArgsConstructor
     @Getter @Setter
     public static class Image{
+
+        @Column(nullable = false)
+
         private String url;
         private int height;
         private int width;

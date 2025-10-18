@@ -35,13 +35,13 @@ public class RatingService {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         //트랙이 db에 없으면 새로 생성
-        List<Track.Image> images = Track.toImage(request.getImages());
+        List<Track.Image> images = Track.toImage(request.getImages()); // ImageDto -> Image
         Track track = trackRepository.findById(request.getSpotifyId())
                 .orElseGet(() -> {
                     Track newTrack = Track.builder()
-                            .track_id(request.getSpotifyId())
+                            .trackId(request.getSpotifyId())
                             .title(request.getName())
-                            .artist(request.getArtist())
+                            .artists(request.getArtist())
                             .spotifyUri(request.getSpotifyUri())
                             .images(images)
                             .build();
@@ -49,7 +49,7 @@ public class RatingService {
                 });
 
         // 기존 평점 있으면 수정, 없으면 새로 등록
-        Rating rating = ratingRepository.findByUserAndTrack(userId, track.getTrack_id())
+        Rating rating = ratingRepository.findByUserAndTrack(userId, track.getTrackId())
                 .map(existing -> {
                     existing.setRate(request.getRate());
                     return existing;
@@ -59,14 +59,14 @@ public class RatingService {
                     return ratingRepository.save(
                             Rating.builder()
                                     .userId(userId)
-                                    .trackId(track.getTrack_id())
+                                    .trackId(track.getTrackId())
                                     .rate(request.getRate())
                                     .build()
                     );
                 });
 
         //트랙의 평점 계산
-        List<Rating> ratings = ratingRepository.findByTrackId(track.getTrack_id());
+        List<Rating> ratings = ratingRepository.findByTrackId(track.getTrackId());
         int rateCnt = ratings.size();
         Double avgRate = ratings.stream().mapToDouble(Rating::getRate).average().orElse(0.0);
         Double myRate = ratings.stream()
@@ -75,15 +75,15 @@ public class RatingService {
                 .findFirst()
                 .orElse(0.0);
 
-        List<CommentDto> comments = commentRepository.findByTrackId(track.getTrack_id())
+        List<CommentDto> comments = commentRepository.findByTrackId(track.getTrackId())
                 .stream()
                 .map(CommentDto::fromEntity)
                 .toList();
 
         return TrackInfoDto.builder()
                 .name(track.getTitle())
-                .spotifyId(track.getTrack_id())
-                .artist(track.getArtist())
+                .spotifyId(track.getTrackId())
+                .artist(track.getArtists())
                 .spotifyUri(track.getSpotifyUri())
                 .images(request.getImages())
                 .avgRate(avgRate)

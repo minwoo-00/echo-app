@@ -41,9 +41,9 @@ public class CommentService {
         Track track = trackRepository.findById(request.getSpotifyId())
                 .orElseGet(() -> {
                     Track newTrack = Track.builder()
-                            .track_id(request.getSpotifyId())
+                            .trackId(request.getSpotifyId())
                             .title(request.getName())
-                            .artist(request.getArtist())
+                            .artists(request.getArtist())
                             .spotifyUri(request.getSpotifyUri())
                             .images(images)
                             .build();
@@ -51,7 +51,7 @@ public class CommentService {
                 });
 
         //기존 코멘트 있으면 수정, 없으면 새로 등록
-        Comment comment = commentRepository.findByUserAndTrack(userId, track.getTrack_id())
+        Comment comment = commentRepository.findByUserAndTrack(userId, track.getTrackId())
                 .map(existing -> {
                     existing.setContent(request.getContent());
                     return existing;
@@ -60,14 +60,14 @@ public class CommentService {
                         Comment.builder()
                                 .userId(userId)
                                 .userNickname(user.getNickname())
-                                .trackId(track.getTrack_id())
+                                .trackId(track.getTrackId())
                                 .content(request.getContent())
                                 .createdAt(LocalDateTime.now())
                                 .build()
                 ));
 
         //트랙의 평점 계산
-        List<Rating> ratings = ratingRepository.findByTrackId(track.getTrack_id());
+        List<Rating> ratings = ratingRepository.findByTrackId(track.getTrackId());
         int rateCnt = ratings.size();
         Double avgRate = ratings.stream().mapToDouble(Rating::getRate).average().orElse(0.0);
         Double myRate = ratings.stream()
@@ -76,15 +76,15 @@ public class CommentService {
                 .findFirst()
                 .orElse(0.0);
 
-        List<CommentDto> comments = commentRepository.findByTrackId(track.getTrack_id())
+        List<CommentDto> comments = commentRepository.findByTrackId(track.getTrackId())
                 .stream()
                 .map(CommentDto::fromEntity)
                 .toList();
 
         return TrackInfoDto.builder()
                 .name(track.getTitle())
-                .spotifyId(track.getTrack_id())
-                .artist(track.getArtist())
+                .spotifyId(track.getTrackId())
+                .artist(track.getArtists())
                 .spotifyUri(track.getSpotifyUri())
                 .images(request.getImages())
                 .avgRate(avgRate)
