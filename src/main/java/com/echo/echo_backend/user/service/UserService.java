@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -62,7 +63,7 @@ public class UserService {
     @Transactional
     public User createUser(String spotifyId, String email,String accessToken, String refreshToken, int expiresIn) {
         User user = userRepository.save(new User(spotifyId, email)); // String spotify_id, String email
-        userTokensRepository.saveTokens(new UserTokens(spotifyId, accessToken, refreshToken, expiresIn));
+        userTokensRepository.save(new UserTokens(spotifyId, accessToken, refreshToken, expiresIn));
         return user;
     }
 
@@ -89,7 +90,13 @@ public class UserService {
 
     @Transactional
     public void updateTokens(String spotifyId, String accessToken, String refreshToken, int expiresIn) {
-        userTokensRepository.updateTokens(spotifyId,accessToken,refreshToken,expiresIn);
+        Optional<UserTokens> existing = userTokensRepository.findBySpotifyId(spotifyId);
+
+        if (existing.isPresent()) {
+            UserTokens userTokens = existing.get();
+            userTokens.updateTokens(accessToken, refreshToken, expiresIn);
+        }
+        //userTokensRepository.updateTokens(spotifyId,accessToken,refreshToken,expiresIn);
     }
 
     @Transactional

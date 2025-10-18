@@ -32,25 +32,26 @@ public class SpotifyAuthService {
     // 갱신된 accessToken 반환
     @Transactional
     public String getValidAccessToken(String spotify_id) {
-        UserTokens token = userTokensRepository.findTokenBySpotifyId(spotify_id);
-               // .orElseThrow(() -> new RuntimeException("Spotify token not found"));
+        UserTokens token = userTokensRepository.findBySpotifyId(spotify_id) //수정 필요
+               .orElseThrow(() -> new RuntimeException("Spotify token not found"));
 
         // 유효성 체크 (30초 버퍼)
         if (Instant.now().isAfter(token.getExpiresAt().minusSeconds(30))) {
             refreshAccessToken(token);
         }
 
-        return token.getSpotify_access_token();
+        return token.getSpotifyAccessToken();
     }
 
     // 토큰 갱신
+    @Transactional
     private void refreshAccessToken(UserTokens token) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "refresh_token");
-        body.add("refresh_token", token.getSpotify_refresh_token());
+        body.add("refresh_token", token.getSpotifyRefreshToken());
         body.add("client_id", clientId);
         body.add("client_secret", clientSecret);
 
@@ -63,10 +64,11 @@ public class SpotifyAuthService {
 
         if (responseBody != null && responseBody.containsKey("access_token")) {
             String newAccessToken = (String) responseBody.get("access_token");
+            String newRefreshToken = (String) responseBody.get("refresh_token");
             Integer expiresIn = (Integer) responseBody.get("expires_in");
 
             // 엔티티 갱신
-            token.updateAccessToken(newAccessToken, expiresIn);
+            token.updateTokens(newAccessToken, newRefreshToken, expiresIn);
             //userTokensRepository.save(token);
         } else {
             throw new RuntimeException("Failed to refresh Spotify access token");
