@@ -74,4 +74,16 @@ public class TrackController {
         TrackInfoDto response = commentService.createOrUpdateComment(request, userId);
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "Delete comment", description = "User delete a comment on a track.")
+    @DeleteMapping("/comments")
+    public ResponseEntity<TrackInfoDto> deleteComment(
+            @RequestBody CommentDeleteRequest request,
+            Authentication authentication)
+    {
+        Long userId = (Long) authentication.getPrincipal();
+        long commentId = request.getId();
+        TrackInfoDto response = commentService.deleteComment(userId, commentId);
+        return ResponseEntity.ok(response);
+    }
 }

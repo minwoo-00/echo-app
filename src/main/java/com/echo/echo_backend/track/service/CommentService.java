@@ -2,6 +2,7 @@ package com.echo.echo_backend.track.service;
 
 import com.echo.echo_backend.track.dto.CommentDto;
 import com.echo.echo_backend.track.dto.CommentRequest;
+import com.echo.echo_backend.track.dto.ImageDto;
 import com.echo.echo_backend.track.dto.TrackInfoDto;
 import com.echo.echo_backend.track.entity.Comment;
 import com.echo.echo_backend.track.entity.Rating;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CommentService {
@@ -86,6 +88,44 @@ public class CommentService {
                 .artist(track.getArtists())
                 .spotifyUri(track.getSpotifyUri())
                 .images(request.getImages())
+                .avgRate(avgRate)
+                .rateCnt(rateCnt)
+                .myRate(myRate)
+                .comments(comments)
+                .build();
+    }
+
+    @Transactional
+    public TrackInfoDto deleteComment(Long userId, Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+
+        Track track = trackRepository.findById(comment.getTrackId())
+                .orElseThrow(() -> new IllegalArgumentException("Track not found"));
+
+        commentRepository.deleteById(commentId);
+
+        //트랙의 평점 계산
+        List<Rating> ratings = ratingRepository.findByIdTrackId(track.getTrackId());
+        int rateCnt = ratings.size();
+        Double avgRate = ratings.stream().mapToDouble(Rating::getRate).average().orElse(0.0);
+        Double myRate = ratings.stream()
+                .filter(r -> r.getUserId().equals(userId))
+                .map(Rating::getRate)
+                .findFirst()
+                .orElse(0.0);
+
+        List<CommentDto> comments = commentRepository.findByTrackId(track.getTrackId())
+                .stream()
+                .map(CommentDto::fromEntity)
+                .toList();
+
+        return TrackInfoDto.builder()
+                .name(track.getTitle())
+                .spotifyId(track.getTrackId())
+                .artist(track.getArtists())
+                .spotifyUri(track.getSpotifyUri())
+                .images(ImageDto.toImageDto(track.getImages()))
                 .avgRate(avgRate)
                 .rateCnt(rateCnt)
                 .myRate(myRate)
