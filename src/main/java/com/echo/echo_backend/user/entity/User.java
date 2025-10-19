@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter @Setter
 @NoArgsConstructor
@@ -39,12 +41,19 @@ public class User {
     @Column(nullable = false)
     private int rateCnt = 0;
 
-    @Column(nullable = false) // 삭제 예정
-    private double avgRate = 0.0;
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private UserTokens tokens;
+
+   /* @Column(nullable = false) // 삭제 예정
+    private double avgRate = 0.0;*/
 
     public User(String spotifyId, String email) {
         this.spotifyId = spotifyId;
         this.email = email;
+        this.createdAt = LocalDateTime.now();
     }
 
     public void incrementFollowing() {

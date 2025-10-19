@@ -31,8 +31,8 @@ public class SpotifyAuthService {
 
     // 갱신된 accessToken 반환
     @Transactional
-    public String getValidAccessToken(String spotify_id) {
-        UserTokens token = userTokensRepository.findBySpotifyId(spotify_id) //수정 필요
+    public String getValidAccessToken(Long userId) {
+        UserTokens token = userTokensRepository.findByuserId(userId)
                .orElseThrow(() -> new RuntimeException("Spotify token not found"));
 
         // 유효성 체크 (30초 버퍼)

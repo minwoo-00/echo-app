@@ -7,9 +7,9 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface UserTokensRepository extends JpaRepository<UserTokens, String> {
+public interface UserTokensRepository extends JpaRepository<UserTokens, Long> {
 
-    Optional<UserTokens> findBySpotifyId(String spotifyId);
+    Optional<UserTokens> findByuserId(Long userId);
 
     /*UserTokens saveTokens(UserTokens userTokens);
     UserTokens updateTokens(String spotify_id, String accessToken, String refreshToken, int expiresIn);

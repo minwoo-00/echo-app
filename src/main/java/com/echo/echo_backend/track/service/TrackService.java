@@ -38,7 +38,7 @@ public class TrackService {
 
     public List<TrackDto> searchTracks(Long userId, String query) {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        String accessToken = spotifyAuthService.getValidAccessToken(user.getSpotifyId());
+        String accessToken = spotifyAuthService.getValidAccessToken(user.getId());
 
         //String url = BASE_URL + "/search?q=" + UriUtils.encode(query, StandardCharsets.UTF_8)
         //        + "&type=track&limit=20";
@@ -75,7 +75,7 @@ public class TrackService {
 
     public List<TrackDto> getUserTopTracks(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        String accessToken = spotifyAuthService.getValidAccessToken(user.getSpotifyId());
+        String accessToken = spotifyAuthService.getValidAccessToken(user.getId());
 
         String url = BASE_URL + "/me/top/tracks" + "?limit=20";
         HttpHeaders headers = new HttpHeaders();

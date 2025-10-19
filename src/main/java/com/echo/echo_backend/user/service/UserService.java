@@ -56,14 +56,16 @@ public class UserService {
                 response.setFollowState(true);
             }
         }*/
-        response.setFollowState(followRepository.existsByUserIdAndFollowingId(myId, userId));
+        response.setFollowState(followRepository.existsByIdUserIdAndIdFollowingId(myId, userId));
         return response;
     }
 
     @Transactional
     public User createUser(String spotifyId, String email,String accessToken, String refreshToken, int expiresIn) {
-        User user = userRepository.save(new User(spotifyId, email)); // String spotify_id, String email
-        userTokensRepository.save(new UserTokens(spotifyId, accessToken, refreshToken, expiresIn));
+        User user = new User(spotifyId, email); // String spotify_id, String email
+        UserTokens tokens = new UserTokens(user, accessToken, refreshToken, expiresIn);
+        user.setTokens(tokens);
+        userRepository.save(user);
         return user;
     }
 
@@ -89,8 +91,8 @@ public class UserService {
     }
 
     @Transactional
-    public void updateTokens(String spotifyId, String accessToken, String refreshToken, int expiresIn) {
-        Optional<UserTokens> existing = userTokensRepository.findBySpotifyId(spotifyId);
+    public void updateTokens(Long userId, String accessToken, String refreshToken, int expiresIn) {
+        Optional<UserTokens> existing = userTokensRepository.findByuserId(userId);
 
         if (existing.isPresent()) {
             UserTokens userTokens = existing.get();
@@ -112,14 +114,14 @@ public class UserService {
 
     @Transactional
     public void unfollow(Long id, Long followingId) {
-        followRepository.deleteByUserIdAndFollowingId(id, followingId);
+        followRepository.deleteByIdUserIdAndIdFollowingId(id, followingId);
         userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found")).decrementFollowing();
         userRepository.findById(followingId).orElseThrow(() -> new IllegalArgumentException("User not found")).decrementFollower();
     }
 
     @Transactional(readOnly = true)
     public List<UserSummaryResponse> getFollowers(Long userId) {
-        List<Follow> follows = followRepository.findByFollowingId(userId);
+        List<Follow> follows = followRepository.findByIdFollowingId(userId);
         List<UserSummaryResponse> followList = new ArrayList<>();
         for (Follow follow : follows) {
             User user = userRepository.findById(follow.getUserId()).orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -131,7 +133,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<UserSummaryResponse> getFollowings(Long userId) {
         //List<Follow> follows = followRepository.findByFollowerId(userId);
-        List<Follow> follows = followRepository.findByUserId(userId);
+        List<Follow> follows = followRepository.findByIdUserId(userId);
         List<UserSummaryResponse> followList = new ArrayList<>();
         for (Follow follow : follows) {
             User user = userRepository.findById(follow.getFollowingId()).orElseThrow(() -> new IllegalArgumentException("User not found"));

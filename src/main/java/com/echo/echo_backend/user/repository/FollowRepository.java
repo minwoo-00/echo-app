@@ -1,34 +1,34 @@
 package com.echo.echo_backend.user.repository;
 
 import com.echo.echo_backend.user.entity.Follow;
+import com.echo.echo_backend.user.entity.FollowId;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.lang.NonNullApi;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface FollowRepository extends JpaRepository<Follow, Long> {
+public interface FollowRepository extends JpaRepository<Follow, FollowId> {
 
     Follow save(Follow follow);
 
     // 팔로잉 목록
-    List<Follow> findByUserId(Long userId);
+    List<Follow> findByIdUserId(Long userId);
 
     // 팔로워 목록
-    List<Follow> findByFollowingId(Long followingId);
+    List<Follow> findByIdFollowingId(Long followingId);
 
     // 특정 팔로우 관계 존재 여부 확인
-    boolean existsByUserIdAndFollowingId(Long userId, Long followingId);
+    boolean existsByIdUserIdAndIdFollowingId(Long userId, Long followingId);
 
     // 특정 팔로우 관계 삭제
-    void deleteByUserIdAndFollowingId(Long userId, Long followingId);
+    void deleteByIdUserIdAndIdFollowingId(Long userId, Long followingId);
 
     // 팔로워 수
-    int countByFollowingId(Long userId);
+    int countByIdFollowingId(Long userId);
 
     // 팔로잉 수
-    int countByUserId(Long userId);
+    int countByIdUserId(Long userId);
 
     /*int countFollowing(Long userId);
     int countFollower(Long userId);
