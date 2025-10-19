@@ -13,6 +13,7 @@ import com.echo.echo_backend.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -52,6 +53,7 @@ public class RatingService {
         Rating rating = ratingRepository.findByIdUserIdAndIdTrackId(userId, track.getTrackId())
                 .map(existing -> {
                     existing.setRate(request.getRate());
+                    existing.setUpdatedAt(LocalDateTime.now());
                     return existing;
                 })
                 .orElseGet(() -> {

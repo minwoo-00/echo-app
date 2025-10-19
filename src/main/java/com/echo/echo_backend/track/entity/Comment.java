@@ -33,6 +33,9 @@ public class Comment {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
     public Comment(Long userId, String userNickname, String trackId, String content) {
         this.userId = userId;
         this.userNickname = userNickname;
@@ -44,6 +47,7 @@ public class Comment {
     public void prePersist() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
+            updatedAt = LocalDateTime.now();
         }
     }
 

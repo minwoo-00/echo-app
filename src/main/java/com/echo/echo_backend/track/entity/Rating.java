@@ -1,11 +1,9 @@
 package com.echo.echo_backend.track.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -22,6 +20,12 @@ public class Rating {
     @Column(nullable = false)
     private double rate;
 
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
     public Rating(Long userId, String trackId, double rate) {
         this.id = new RatingId(userId, trackId);
         this.rate = rate;
@@ -33,5 +37,13 @@ public class Rating {
 
     public String getTrackId() {
         return id != null ? id.getTrackId() : null;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+            updatedAt = LocalDateTime.now();
+        }
     }
 }

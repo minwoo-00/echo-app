@@ -56,6 +56,7 @@ public class CommentService {
         Comment comment = commentRepository.findByUserIdAndTrackId(userId, track.getTrackId())
                 .map(existing -> {
                     existing.setContent(request.getContent());
+                    existing.setUpdatedAt(LocalDateTime.now());
                     return existing;
                 })
                 .orElseGet(() -> commentRepository.save(
