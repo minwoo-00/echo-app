@@ -1,7 +1,9 @@
-package com.echo.echo_backend.auth;
+package com.echo.echo_backend.auth.controller;
 
+import com.echo.echo_backend.auth.OAuthStateStore;
 import com.echo.echo_backend.auth.SpotifyProperties;
 import com.echo.echo_backend.auth.PkceUtil;
+import com.echo.echo_backend.auth.dto.AuthorizationUrlResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +31,7 @@ public class SpotifyAuthController {
                     + "The frontend should redirect the user to this URL to start the Spotify login flow."
     )
     @GetMapping("/auth/spotify/url")
-    public Map<String, String> getAuthorizationUrl(HttpSession session) {
+    public AuthorizationUrlResponse getAuthorizationUrl(HttpSession session) {
         String state = PkceUtil.randomUrlSafeString(32);
         String codeVerifier = PkceUtil.randomUrlSafeString(64);
         String codeChallenge = PkceUtil.sha256Base64Url(codeVerifier);
@@ -45,7 +47,7 @@ public class SpotifyAuthController {
                 + "&code_challenge=" + enc(codeChallenge)
                 + "&code_challenge_method=S256";
 
-        return Map.of("authorizationUrl", url);
+        return new AuthorizationUrlResponse(url);
     }
 
     private static String enc(String s) {

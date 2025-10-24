@@ -1,10 +1,15 @@
-package com.echo.echo_backend.auth;
+package com.echo.echo_backend.auth.controller;
 
+import com.echo.echo_backend.auth.OAuthStateStore;
+import com.echo.echo_backend.auth.SpotifyProperties;
+import com.echo.echo_backend.auth.dto.SpotifyOAuthCallbackResponse;
+import com.echo.echo_backend.auth.dto.SpotifyTokenResponse;
 import com.echo.echo_backend.auth.jwt.JwtProvider;
 import com.echo.echo_backend.user.service.UserService;
 import com.echo.echo_backend.user.entity.User;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,8 +41,18 @@ public class SpotifyCallbackController {
         this.userService = userService;
     }
 
+    @Operation(summary = "Spotify OAuth2 Callback", description = """
+        Spotify 인증 이후 Redirect URI로 호출되는 콜백 엔드포인트입니다.
+        Spotify로부터 전달받은 인증 코드를 기반으로 유저 정보를 조회하고,  
+        Echo 서비스용 JWT 토큰(`echo_jwt`)을 발급합니다.  
+        또한, 신규 사용자 여부(`isNewUser`)를 함께 반환합니다.
+        
+        ⚙️ 일반적으로 프론트엔드에서는 이 API 응답을 통해:
+        - 신규 유저면 회원가입 절차를 진행하고
+        - 기존 유저면 자동 로그인 처리를 수행합니다.
+        """)
     @GetMapping("/oauth2/callback/spotify")
-    public Map<String, Object> callback(
+    public SpotifyOAuthCallbackResponse callback(
             @RequestParam String code,
             @RequestParam String state
     ) throws Exception {
@@ -112,10 +127,7 @@ public class SpotifyCallbackController {
         String jwt = jwtProvider.generateToken(user.getId().toString());
 
         // 6. 반환 (프론트로 JWT 전달)
-        return Map.of(
-                "echo_jwt", jwt,
-                "isNewUser", isNewUser
-        );
+        return new SpotifyOAuthCallbackResponse(jwt, isNewUser);
     }
 
     private static String enc(String s) {

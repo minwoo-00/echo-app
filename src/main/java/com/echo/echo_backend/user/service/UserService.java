@@ -102,21 +102,33 @@ public class UserService {
     }
 
     @Transactional
-    public void follow(Long id, Long followingId) {
+    public boolean follow(Long id, Long followingId) {
         if (id.equals(followingId)) {
-            return;
+            throw new IllegalArgumentException("자기 자신은 팔로우 할 수 없습니다.");
         }
+
+        if (!userRepository.existsById(followingId)) {
+            throw new IllegalArgumentException("해당 사용자가 존재하지 않습니다.");
+        }
+
+        boolean exists = followRepository.existsByIdUserIdAndIdFollowingId(id, followingId);
+        if (exists) return false;
 
         followRepository.save(new Follow(id, followingId));
         userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found")).incrementFollowing();
         userRepository.findById(followingId).orElseThrow(() -> new IllegalArgumentException("User not found")).incrementFollower();
+        return true;
     }
 
     @Transactional
-    public void unfollow(Long id, Long followingId) {
+    public boolean unfollow(Long id, Long followingId) {
+        boolean exists = followRepository.existsByIdUserIdAndIdFollowingId(id, followingId);
+        if (!exists) return false;
+
         followRepository.deleteByIdUserIdAndIdFollowingId(id, followingId);
         userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found")).decrementFollowing();
         userRepository.findById(followingId).orElseThrow(() -> new IllegalArgumentException("User not found")).decrementFollower();
+        return true;
     }
 
     @Transactional(readOnly = true)

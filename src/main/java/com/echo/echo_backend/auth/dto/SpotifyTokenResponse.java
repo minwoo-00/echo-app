@@ -1,4 +1,4 @@
-package com.echo.echo_backend.auth;
+package com.echo.echo_backend.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
